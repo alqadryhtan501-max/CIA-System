@@ -1,3 +1,4 @@
+const control = require("./buttons/control");
 require("dotenv").config();
 
 const {
