@@ -1,49 +1,27 @@
-const control = require("./buttons/control");
-require("dotenv").config();
-
 const {
-    Client,
-    GatewayIntentBits,
-    Collection
+    ActionRowBuilder,
+    ButtonBuilder,
+    ButtonStyle,
+    EmbedBuilder
 } = require("discord.js");
 
-const fs = require("fs");
-const path = require("path");
+async function sendPanel(channel) {
+    const embed = new EmbedBuilder()
+        .setTitle("🏛️ CIA-System")
+        .setDescription("اضغط الزر أدناه للدخول إلى لوحة الكنترول.")
+        .setColor("#0B3D91");
 
-const client = new Client({
-    intents: [GatewayIntentBits.Guilds]
-});
+    const row = new ActionRowBuilder().addComponents(
+        new ButtonBuilder()
+            .setCustomId("control_login")
+            .setLabel("🔓 دخول الكنترول")
+            .setStyle(ButtonStyle.Primary)
+    );
 
-client.commands = new Collection();
-
-const commandsPath = path.join(__dirname, "commands");
-const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith(".js"));
-
-for (const file of commandFiles) {
-    const command = require(path.join(commandsPath, file));
-    client.commands.set(command.data.name, command);
+    await channel.send({
+        embeds: [embed],
+        components: [row]
+    });
 }
 
-client.once("ready", () => {
-    console.log(`✅ Logged in as ${client.user.tag}`);
-});
-
-client.on("interactionCreate", async interaction => {
-    if (!interaction.isChatInputCommand()) return;
-
-    const command = client.commands.get(interaction.commandName);
-
-    if (!command) return;
-
-    try {
-        await command.execute(interaction);
-    } catch (error) {
-        console.error(error);
-        await interaction.reply({
-            content: "حدث خطأ أثناء تنفيذ الأمر.",
-            ephemeral: true
-        });
-    }
-});
-
-client.login(process.env.TOKEN);
+module.exports = { sendPanel };
